@@ -13,7 +13,7 @@ import (
 type UnverifiedBaseResponse struct {
 	XMLName      xml.Name `xml:"urn:oasis:names:tc:SAML:2.0:protocol Response"`
 	ID           string   `xml:"ID,attr"`
-	InResponseTo string   `xml:"InResponseTo,attr"`
+	InResponseTo string   `xml:"InResponseTo,attr,omitEmpty"`
 	Destination  string   `xml:"Destination,attr"`
 	Version      string   `xml:"Version,attr"`
 	Issuer       *Issuer  `xml:"Issuer"`
@@ -22,7 +22,7 @@ type UnverifiedBaseResponse struct {
 type Response struct {
 	XMLName             xml.Name             `xml:"urn:oasis:names:tc:SAML:2.0:protocol Response"`
 	ID                  string               `xml:"ID,attr"`
-	InResponseTo        string               `xml:"InResponseTo,attr"`
+	InResponseTo        string               `xml:"InResponseTo,attr,omitempty"`
 	Destination         string               `xml:"Destination,attr"`
 	Version             string               `xml:"Version,attr"`
 	IssueInstant        time.Time            `xml:"IssueInstant,attr"`
@@ -97,7 +97,7 @@ type SubjectConfirmationData struct {
 	XMLName      xml.Name `xml:"urn:oasis:names:tc:SAML:2.0:assertion SubjectConfirmationData"`
 	NotOnOrAfter string   `xml:"NotOnOrAfter,attr"`
 	Recipient    string   `xml:"Recipient,attr"`
-	InResponseTo string   `xml:"InResponseTo,attr"`
+	InResponseTo string   `xml:"InResponseTo,attr,omitempty"`
 }
 
 type Conditions struct {
