@@ -20,6 +20,7 @@ import (
 func (sp *SAMLServiceProvider) validationContext() *dsig.ValidationContext {
 	ctx := dsig.NewDefaultValidationContext(sp.IDPCertificateStore)
 	ctx.Clock = sp.Clock
+	ctx.AllowedClockSkew = sp.AllowedClockSkew
 	return ctx
 }
 
@@ -96,7 +97,7 @@ func (sp *SAMLServiceProvider) getDecryptCert() (*tls.Certificate, error) {
 			return nil, fmt.Errorf("invalid x509 decryption cert: %v", err)
 		} else {
 			now := sp.Clock.Now()
-			if now.Before(cert.NotBefore) || now.After(cert.NotAfter) {
+			if now.Before(cert.NotBefore.Add(-sp.AllowedClockSkew)) || now.After(cert.NotAfter) {
 				return nil, fmt.Errorf("decryption cert is not valid at this time")
 			}
 		}

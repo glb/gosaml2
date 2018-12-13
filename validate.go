@@ -63,7 +63,7 @@ func (sp *SAMLServiceProvider) VerifyAssertionConditions(assertion *types.Assert
 		return nil, ErrParsing{Tag: NotBeforeAttr, Value: conditions.NotBefore, Type: "time.RFC3339"}
 	}
 
-	if now.Before(notBefore) {
+	if now.Before(notBefore.Add(-sp.AllowedClockSkew)) {
 		warningInfo.InvalidTime = true
 	}
 
@@ -224,7 +224,6 @@ func (sp *SAMLServiceProvider) Validate(response *types.Response) error {
 				Actual:   subjectConfirmationData.NotOnOrAfter,
 			}
 		}
-
 	}
 
 	return nil

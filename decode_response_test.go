@@ -1,10 +1,13 @@
 package saml2
 
 import (
+	"crypto/rand"
+	"crypto/rsa"
 	"crypto/tls"
 	"crypto/x509"
 	"encoding/pem"
 	"io/ioutil"
+	"math/big"
 	"testing"
 	"time"
 
@@ -117,4 +120,116 @@ func TestCompressedResponse(t *testing.T) {
 
 	_, err = sp.RetrieveAssertionInfo(string(bs))
 	require.NoError(t, err, "Assertion info should be retrieved with no error")
+}
+
+func Test_SAMLServiceProvider_GetDecryptCert(t *testing.T) {
+	tcs := []struct {
+		name             string
+		actualClockSkew  time.Duration
+		allowedClockSkew time.Duration
+		expiry           time.Duration
+		check            func(t *testing.T, cert *tls.Certificate, err error)
+	}{
+		{
+			name: "no actual clock skew, no allowed clock skew, should have no error",
+			check: func(t *testing.T, cert *tls.Certificate, err error) {
+				require.NoError(t, err)
+				require.NotNil(t, cert)
+			},
+		},
+		{
+			name:             "no actual clock skew, some allowed clock skew, should have no error",
+			allowedClockSkew: 30 * time.Second,
+			check: func(t *testing.T, cert *tls.Certificate, err error) {
+				require.NoError(t, err)
+				require.NotNil(t, cert)
+			},
+		},
+		{
+			name:             "actual clock skew within bounds, some allowed clock skew, should have no error",
+			actualClockSkew:  10 * time.Second,
+			allowedClockSkew: 30 * time.Second,
+			check: func(t *testing.T, cert *tls.Certificate, err error) {
+				require.NoError(t, err)
+				require.NotNil(t, cert)
+			},
+		},
+		{
+			name:             "actual clock skew outside bounds, some allowed clock skew, should have error",
+			actualClockSkew:  60 * time.Second,
+			allowedClockSkew: 30 * time.Second,
+			check: func(t *testing.T, cert *tls.Certificate, err error) {
+				require.EqualError(t, err, "decryption cert is not valid at this time")
+				require.Nil(t, cert)
+			},
+		},
+		{
+			name:             "allowed skew should not affect certificate NotOnOrAfter evaluation",
+			expiry:           -10 * time.Second,
+			allowedClockSkew: 30 * time.Second,
+			check: func(t *testing.T, cert *tls.Certificate, err error) {
+				require.EqualError(t, err, "decryption cert is not valid at this time")
+				require.Nil(t, cert)
+			},
+		},
+	}
+
+	for _, tc := range tcs {
+		t.Run(tc.name, func(t *testing.T) {
+			now := time.Now()
+
+			expiry := 365 * 24 * time.Hour
+			if tc.expiry != 0 {
+				expiry = tc.expiry
+			}
+
+			ks := randomKeyStoreForTestWithValidityPeriod(now.Add(tc.actualClockSkew), now.Add(expiry))
+
+			sp := &SAMLServiceProvider{
+				SPKeyStore:             ks,
+				ValidateEncryptionCert: true,
+				AllowedClockSkew:       tc.allowedClockSkew,
+			}
+
+			cert, err := sp.getDecryptCert()
+
+			tc.check(t, cert, err)
+		})
+	}
+}
+
+func randomKeyStoreForTestWithValidityPeriod(notBefore, notAfter time.Time) dsig.X509KeyStore {
+	key, err := rsa.GenerateKey(rand.Reader, 1024)
+	if err != nil {
+		panic(err)
+	}
+
+	template := &x509.Certificate{
+		SerialNumber: big.NewInt(0),
+		NotBefore:    notBefore,
+		NotAfter:     notAfter,
+
+		KeyUsage:              x509.KeyUsageDigitalSignature,
+		ExtKeyUsage:           []x509.ExtKeyUsage{},
+		BasicConstraintsValid: true,
+	}
+
+	cert, err := x509.CreateCertificate(rand.Reader, template, template, &key.PublicKey, key)
+	if err != nil {
+		panic(err)
+	}
+
+	return &TestKeyStore{
+		privateKey: key,
+		cert:       cert,
+	}
+}
+
+type TestKeyStore struct {
+	privateKey *rsa.PrivateKey
+	cert       []byte
+}
+
+func (ks *TestKeyStore) GetKeyPair() (*rsa.PrivateKey, []byte, error) {
+	return ks.privateKey, ks.cert, nil
 }
