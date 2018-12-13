@@ -64,6 +64,7 @@ type SAMLServiceProvider struct {
 	SkipSignatureValidation bool
 	AllowMissingAttributes  bool
 	Clock                   *dsig.Clock
+	AllowedClockSkew        time.Duration
 	signingContextMu        sync.RWMutex
 	signingContext          *dsig.SigningContext
 }
