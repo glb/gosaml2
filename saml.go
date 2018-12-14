@@ -128,10 +128,13 @@ func (sp *SAMLServiceProvider) Metadata() (*types.EntityDescriptor, error) {
 					},
 				},
 			},
-			AssertionConsumerServices: []types.IndexedEndpoint{{
-				Binding:  BindingHttpPost,
-				Location: sp.AssertionConsumerServiceURL,
-				Index:    1,
+			AssertionConsumerServices: []types.AssertionConsumerService{{
+				IndexedEndpoint: types.IndexedEndpoint{
+					Binding:  BindingHttpPost,
+					Location: sp.AssertionConsumerServiceURL,
+					Index:    1,
+				},
+				IsDefault: true,
 			}},
 		},
 	}, nil
