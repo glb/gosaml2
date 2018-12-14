@@ -29,14 +29,14 @@ type IndexedEndpoint struct {
 }
 
 type SPSSODescriptor struct {
-	XMLName                    xml.Name          `xml:"urn:oasis:names:tc:SAML:2.0:metadata SPSSODescriptor"`
-	AuthnRequestsSigned        bool              `xml:"AuthnRequestsSigned,attr"`
-	WantAssertionsSigned       bool              `xml:"WantAssertionsSigned,attr"`
-	ProtocolSupportEnumeration string            `xml:"protocolSupportEnumeration,attr"`
-	KeyDescriptors             []KeyDescriptor   `xml:"KeyDescriptor"`
-	SingleLogoutServices       []Endpoint        `xml:"SingleLogoutService"`
-	NameIDFormats              []string          `xml:"NameIDFormat"`
-	AssertionConsumerServices  []IndexedEndpoint `xml:"AssertionConsumerService"`
+	XMLName                    xml.Name                   `xml:"urn:oasis:names:tc:SAML:2.0:metadata SPSSODescriptor"`
+	AuthnRequestsSigned        bool                       `xml:"AuthnRequestsSigned,attr"`
+	WantAssertionsSigned       bool                       `xml:"WantAssertionsSigned,attr"`
+	ProtocolSupportEnumeration string                     `xml:"protocolSupportEnumeration,attr"`
+	KeyDescriptors             []KeyDescriptor            `xml:"KeyDescriptor"`
+	SingleLogoutServices       []Endpoint                 `xml:"SingleLogoutService"`
+	NameIDFormats              []string                   `xml:"NameIDFormat"`
+	AssertionConsumerServices  []AssertionConsumerService `xml:"AssertionConsumerService"`
 }
 
 type IDPSSODescriptor struct {
@@ -64,4 +64,10 @@ type SingleSignOnService struct {
 	XMLName  xml.Name `xml:"urn:oasis:names:tc:SAML:2.0:metadata SingleSignOnService"`
 	Binding  string   `xml:"Binding,attr"`
 	Location string   `xml:"Location,attr"`
+}
+
+type AssertionConsumerService struct {
+	XMLName xml.Name `xml:"urn:oasis:names:tc:SAML:2.0:metadata AssertionConsumerService"`
+	IndexedEndpoint
+	IsDefault bool `xml:"isDefault,attr,omitempty"`
 }
