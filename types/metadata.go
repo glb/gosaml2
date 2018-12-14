@@ -29,14 +29,15 @@ type IndexedEndpoint struct {
 }
 
 type SPSSODescriptor struct {
-	XMLName                    xml.Name                   `xml:"urn:oasis:names:tc:SAML:2.0:metadata SPSSODescriptor"`
-	AuthnRequestsSigned        bool                       `xml:"AuthnRequestsSigned,attr"`
-	WantAssertionsSigned       bool                       `xml:"WantAssertionsSigned,attr"`
-	ProtocolSupportEnumeration string                     `xml:"protocolSupportEnumeration,attr"`
-	KeyDescriptors             []KeyDescriptor            `xml:"KeyDescriptor"`
-	SingleLogoutServices       []Endpoint                 `xml:"SingleLogoutService"`
-	NameIDFormats              []string                   `xml:"NameIDFormat"`
-	AssertionConsumerServices  []AssertionConsumerService `xml:"AssertionConsumerService"`
+	XMLName                    xml.Name                    `xml:"urn:oasis:names:tc:SAML:2.0:metadata SPSSODescriptor"`
+	AuthnRequestsSigned        bool                        `xml:"AuthnRequestsSigned,attr"`
+	WantAssertionsSigned       bool                        `xml:"WantAssertionsSigned,attr"`
+	ProtocolSupportEnumeration string                      `xml:"protocolSupportEnumeration,attr"`
+	KeyDescriptors             []KeyDescriptor             `xml:"KeyDescriptor"`
+	SingleLogoutServices       []Endpoint                  `xml:"SingleLogoutService"`
+	NameIDFormats              []string                    `xml:"NameIDFormat"`
+	AssertionConsumerServices  []AssertionConsumerService  `xml:"AssertionConsumerService"`
+	AttributeConsumingServices []AttributeConsumingService `xml:"AttributeConsumingService,omitempty"`
 }
 
 type IDPSSODescriptor struct {
@@ -70,4 +71,26 @@ type AssertionConsumerService struct {
 	XMLName xml.Name `xml:"urn:oasis:names:tc:SAML:2.0:metadata AssertionConsumerService"`
 	IndexedEndpoint
 	IsDefault bool `xml:"isDefault,attr,omitempty"`
+}
+
+type AttributeConsumingService struct {
+	XMLName             xml.Name             `xml:"urn:oasis:names:tc:SAML:2.0:metadata AttributeConsumingService"`
+	Index               int                  `xml:"index,attr"`
+	IsDefault           bool                 `xml:"isDefault,attr,omitempty"`
+	ServiceNames        []LocalizedName      `xml:"ServiceName,omitempty"`
+	ServiceDescriptions []LocalizedName      `xml:"ServiceDescription,omitempty"`
+	RequestedAttributes []RequestedAttribute `xml:"RequestedAttribute,omitempty"`
+}
+
+type LocalizedName struct {
+	Name string `xml:",chardata"`
+	Lang string `xml:"lang,attr"`
+}
+
+type RequestedAttribute struct {
+	XMLName      xml.Name `xml:"urn:oasis:names:tc:SAML:2.0:metadata RequestedAttribute"`
+	Name         string   `xml:"Name,attr"`
+	NameFormat   string   `xml:"NameFormat,attr,omitempty"`
+	FriendlyName string   `xml:"FriendlyName,attr,omitempty"`
+	IsRequired   bool     `xml:"isRequired,attr,omitempty"`
 }
