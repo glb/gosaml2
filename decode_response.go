@@ -309,9 +309,9 @@ func maybeDeflate(data []byte, decoder func([]byte) error) error {
 		return nil
 	}
 
-	deflated, err := ioutil.ReadAll(flate.NewReader(bytes.NewReader(data)))
-	if err != nil {
-		return err
+	deflated, err2 := ioutil.ReadAll(flate.NewReader(bytes.NewReader(data)))
+	if err2 != nil {
+		return fmt.Errorf("%v / %v", err, err2)
 	}
 
 	return decoder(deflated)
